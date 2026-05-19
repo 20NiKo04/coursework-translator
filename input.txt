@@ -1,0 +1,14 @@
+int x;
+int y;
+int result;
+
+read(x);
+read(y);
+
+result = 0;
+
+while (x < y) {
+    result = result + x;
+    write(result);
+    x = x + 1;
+}
