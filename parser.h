@@ -28,19 +28,20 @@ private:
     void exitScope();
     void readStmt();
 
-    void program();            
-    void declaration();       
-    void statement();          
-    string assignment();       
-    void whileStmt();           
-    void writeStmt();         
-    void compoundStmt();        
+    void program();
+    void declaration();
+    void statement();
+    string assignment();
+    void whileStmt();
+    void writeStmt();
+    void compoundStmt();
 
-    string expression();        
-    string comparison();        
-    string additive();         
-    string multiplicative(); 
-    string primary();           
+    string expression();
+    string comparison();
+    string additive();
+    string multiplicative();
+    string unary();
+    string primary();
 
 public:
     Parser(Lexer& lex, SemanticAnalyzer& sem);
