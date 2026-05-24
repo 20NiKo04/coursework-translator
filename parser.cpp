@@ -76,7 +76,7 @@ void Parser::exitScope() {
 void Parser::program() {
     getNextElement();
     while (currentElement.first != 0) {
-        if (checkElement(3, 1)) { 
+        if (checkElement(3, 1)) {
             declaration();
         }
         else {
@@ -87,7 +87,7 @@ void Parser::program() {
 }
 
 void Parser::declaration() {
-    getNextElement(); 
+    getNextElement();
 
     if (!checkElement(1)) {
         syntaxError("Ожидается идентификатор");
@@ -98,13 +98,13 @@ void Parser::declaration() {
     bool initialized = false;
     string initValue = "";
 
-    if (checkElement(4, 6)) { 
+    if (checkElement(4, 6)) {
         getNextElement();
         initValue = expression();
         initialized = true;
     }
 
-    if (!checkElement(4, 20)) { 
+    if (!checkElement(4, 20)) {
         syntaxError("Ожидается ';'");
     }
 
@@ -117,19 +117,19 @@ void Parser::declaration() {
 }
 
 void Parser::statement() {
-    if (checkElement(3, 2)) { 
+    if (checkElement(3, 2)) {
         whileStmt();
     }
-    else if (checkElement(3, 4)) { 
+    else if (checkElement(3, 4)) {
         writeStmt();
     }
-    else if (checkElement(3, 3)) { 
-        readStmt();              
+    else if (checkElement(3, 3)) {
+        readStmt();
     }
-    else if (checkElement(4, 18)) { 
+    else if (checkElement(4, 18)) {
         compoundStmt();
     }
-    else if (checkElement(1)) { 
+    else if (checkElement(1)) {
         assignment();
     }
     else {
@@ -144,14 +144,14 @@ string Parser::assignment() {
     string varName = getElementValue();
     getNextElement();
 
-    if (!checkElement(4, 6)) { 
+    if (!checkElement(4, 6)) {
         syntaxError("Ожидается '='");
     }
     getNextElement();
 
     string exprResult = expression();
 
-    if (!checkElement(4, 20)) { 
+    if (!checkElement(4, 20)) {
         syntaxError("Ожидается ';'");
     }
 
@@ -162,9 +162,9 @@ string Parser::assignment() {
 }
 
 void Parser::whileStmt() {
-    getNextElement(); 
+    getNextElement();
 
-    if (!checkElement(4, 16)) { 
+    if (!checkElement(4, 16)) {
         syntaxError("Ожидается '('");
     }
     getNextElement();
@@ -176,7 +176,7 @@ void Parser::whileStmt() {
 
     string condResult = expression();
 
-    if (!checkElement(4, 17)) { 
+    if (!checkElement(4, 17)) {
         syntaxError("Ожидается ')'");
     }
     getNextElement();
@@ -190,21 +190,21 @@ void Parser::whileStmt() {
 }
 
 void Parser::writeStmt() {
-    getNextElement(); 
+    getNextElement();
 
-    if (!checkElement(4, 16)) { 
+    if (!checkElement(4, 16)) {
         syntaxError("Ожидается '('");
     }
     getNextElement();
 
     string exprResult = expression();
 
-    if (!checkElement(4, 17)) { 
+    if (!checkElement(4, 17)) {
         syntaxError("Ожидается ')'");
     }
     getNextElement();
 
-    if (!checkElement(4, 20)) { 
+    if (!checkElement(4, 20)) {
         syntaxError("Ожидается ';'");
     }
 
@@ -213,14 +213,14 @@ void Parser::writeStmt() {
 }
 
 void Parser::readStmt() {
-    getNextElement(); 
+    getNextElement();
 
-    if (!checkElement(4, 16)) { 
+    if (!checkElement(4, 16)) {
         syntaxError("Ожидается '('");
     }
     getNextElement();
 
-    if (!checkElement(1)) { 
+    if (!checkElement(1)) {
         syntaxError("Ожидается идентификатор");
     }
     string varName = getElementValue();
@@ -231,12 +231,12 @@ void Parser::readStmt() {
 
     getNextElement();
 
-    if (!checkElement(4, 17)) { 
+    if (!checkElement(4, 17)) {
         syntaxError("Ожидается ')'");
     }
     getNextElement();
 
-    if (!checkElement(4, 20)) { 
+    if (!checkElement(4, 20)) {
         syntaxError("Ожидается ';'");
     }
 
@@ -245,15 +245,15 @@ void Parser::readStmt() {
 }
 
 void Parser::compoundStmt() {
-    if (!checkElement(4, 18)) { 
+    if (!checkElement(4, 18)) {
         syntaxError("Ожидается '{'");
     }
 
     enterScope();
     getNextElement();
 
-    while (currentElement.first != 0 && !checkElement(4, 19)) { 
-        if (checkElement(3, 1)) { 
+    while (currentElement.first != 0 && !checkElement(4, 19)) {
+        if (checkElement(3, 1)) {
             declaration();
         }
         else {
@@ -271,19 +271,75 @@ void Parser::compoundStmt() {
 }
 
 string Parser::expression() {
-    return comparison();
+    string left = comparison();
+
+    while (true) {
+        if (checkElement(4, 13)) {   // &&
+            getNextElement();
+            string right = comparison();
+            string temp = semantic->newTempVar();
+            semantic->genBinaryOp("&&", left, right, temp);
+            left = temp;
+        }
+        else if (checkElement(4, 14)) {   // ||
+            getNextElement();
+            string right = comparison();
+            string temp = semantic->newTempVar();
+            semantic->genBinaryOp("||", left, right, temp);
+            left = temp;
+        }
+        else {
+            break;
+        }
+    }
+
+    return left;
 }
 
 string Parser::comparison() {
     string left = additive();
 
-    if (checkElement(4, 9)) { 
+    if (checkElement(4, 9)) {   // <
         getNextElement();
         string right = additive();
         string temp = semantic->newTempVar();
-        semantic->genComparison(left, right, temp);
-        semantic->setLastTemp(temp);
-        return temp;
+        semantic->genComparison("<", left, right, temp);
+        left = temp;
+    }
+    else if (checkElement(4, 10)) {   // >
+        getNextElement();
+        string right = additive();
+        string temp = semantic->newTempVar();
+        semantic->genComparison(">", left, right, temp);
+        left = temp;
+    }
+    else if (checkElement(4, 11)) {   // <=
+        getNextElement();
+        string right = additive();
+        string temp = semantic->newTempVar();
+        semantic->genComparison("<=", left, right, temp);
+        left = temp;
+    }
+    else if (checkElement(4, 12)) {   // >=
+        getNextElement();
+        string right = additive();
+        string temp = semantic->newTempVar();
+        semantic->genComparison(">=", left, right, temp);
+        left = temp;
+    }
+    else if (checkElement(4, 7)) {    // ==
+        getNextElement();
+        string right = additive();
+        string temp = semantic->newTempVar();
+        semantic->genComparison("==", left, right, temp);
+        left = temp;
+    }
+    else if (checkElement(4, 8)) {    // !=
+        getNextElement();
+        string right = additive();
+        string temp = semantic->newTempVar();
+        semantic->genComparison("!=", left, right, temp);
+        left = temp;
     }
 
     return left;
@@ -292,33 +348,75 @@ string Parser::comparison() {
 string Parser::additive() {
     string left = multiplicative();
 
-    while (checkElement(4, 1)) { 
-        getNextElement();
-        string right = multiplicative();
-        string temp = semantic->newTempVar();
-        semantic->genBinaryOp("+", left, right, temp);
-        left = temp;
+    while (true) {
+        if (checkElement(4, 1)) {   // +
+            getNextElement();
+            string right = multiplicative();
+            string temp = semantic->newTempVar();
+            semantic->genBinaryOp("+", left, right, temp);
+            left = temp;
+        }
+        else if (checkElement(4, 2)) {   // -
+            getNextElement();
+            string right = multiplicative();
+            string temp = semantic->newTempVar();
+            semantic->genBinaryOp("-", left, right, temp);
+            left = temp;
+        }
+        else {
+            break;
+        }
     }
 
     return left;
 }
 
 string Parser::multiplicative() {
-    string left = primary();
+    string left = unary();
 
-    while (checkElement(4, 3)) { 
-        getNextElement();
-        string right = primary();
-        string temp = semantic->newTempVar();
-        semantic->genBinaryOp("*", left, right, temp);
-        left = temp;
+    while (true) {
+        if (checkElement(4, 3)) {   // *
+            getNextElement();
+            string right = unary();
+            string temp = semantic->newTempVar();
+            semantic->genBinaryOp("*", left, right, temp);
+            left = temp;
+        }
+        else if (checkElement(4, 4)) {   // /
+            getNextElement();
+            string right = unary();
+            string temp = semantic->newTempVar();
+            semantic->genBinaryOp("/", left, right, temp);
+            left = temp;
+        }
+        else if (checkElement(4, 5)) {   // %
+            getNextElement();
+            string right = unary();
+            string temp = semantic->newTempVar();
+            semantic->genBinaryOp("%", left, right, temp);
+            left = temp;
+        }
+        else {
+            break;
+        }
     }
 
     return left;
 }
 
+string Parser::unary() {
+    if (checkElement(4, 15)) {   // !
+        getNextElement();
+        string operand = unary();
+        string temp = semantic->newTempVar();
+        semantic->genBinaryOp("!", operand, "", temp);
+        return temp;
+    }
+    return primary();
+}
+
 string Parser::primary() {
-    if (checkElement(1)) { 
+    if (checkElement(1)) {
         string name = getElementValue();
 
         if (!semantic->isDeclared(name)) {
@@ -328,18 +426,18 @@ string Parser::primary() {
         getNextElement();
         return name;
     }
-    else if (checkElement(2)) { 
+    else if (checkElement(2)) {
         string constVal = getElementValue();
         getNextElement();
         return constVal;
     }
-    else if (checkElement(3, 3)) { 
+    else if (checkElement(3, 3)) {
         getNextElement();
-        if (!checkElement(4, 16)) { 
+        if (!checkElement(4, 16)) {
             syntaxError("Ожидается '('");
         }
         getNextElement();
-        if (!checkElement(4, 17)) { 
+        if (!checkElement(4, 17)) {
             syntaxError("Ожидается ')'");
         }
         getNextElement();
@@ -348,10 +446,10 @@ string Parser::primary() {
         semantic->genRead(temp);
         return temp;
     }
-    else if (checkElement(4, 16)) { 
+    else if (checkElement(4, 16)) {
         getNextElement();
         string expr = expression();
-        if (!checkElement(4, 17)) { 
+        if (!checkElement(4, 17)) {
             syntaxError("Ожидается ')'");
         }
         getNextElement();
