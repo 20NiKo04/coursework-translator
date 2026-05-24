@@ -83,7 +83,7 @@ bool SemanticAnalyzer::declareVariable(const string& name, bool initialized) {
 
     VarInfo info;
     info.name = name;
-    info.type = "int";      
+    info.type = "int";
     info.declared = true;
     info.initialized = initialized;
 
@@ -124,12 +124,27 @@ void SemanticAnalyzer::genAssignment(const string& var, const string& expr) {
 
 void SemanticAnalyzer::genBinaryOp(const string& op, const string& left,
     const string& right, const string& result) {
-    addTetrad(op, left, right, result);
+    // Поддерживаемые бинарные операции: +, -, *, /, %, &&, ||, !
+    if (op == "+" || op == "-" || op == "*" || op == "/" || op == "%" ||
+        op == "&&" || op == "||" || op == "!") {
+        addTetrad(op, left, right, result);
+    }
+    else {
+        cerr << "Семантическая ошибка: неизвестная операция '" + op + "'" << endl;
+        exit(1);
+    }
 }
 
-void SemanticAnalyzer::genComparison(const string& left, const string& right,
-    const string& result) {
-    addTetrad("<", left, right, result);
+void SemanticAnalyzer::genComparison(const string& op, const string& left,
+    const string& right, const string& result) {
+    // Поддерживаемые операции сравнения: <, >, <=, >=, ==, !=
+    if (op == "<" || op == ">" || op == "<=" || op == ">=" || op == "==" || op == "!=") {
+        addTetrad(op, left, right, result);
+    }
+    else {
+        cerr << "Семантическая ошибка: неизвестная операция сравнения '" + op + "'" << endl;
+        exit(1);
+    }
 }
 
 void SemanticAnalyzer::genRead(const string& var) {
