@@ -107,8 +107,49 @@ void Interpreter::run() {
             setValue(q.result, getValue(q.arg1) / right);
             pc++;
         }
+        else if (op == "%") {
+            int right = getValue(q.arg2);
+            if (right == 0) {
+                cerr << "Ошибка: остаток от деления на ноль" << endl;
+                exit(1);
+            }
+            setValue(q.result, getValue(q.arg1) % right);
+            pc++;
+        }
+        else if (op == "&&") {
+            setValue(q.result, (getValue(q.arg1) != 0 && getValue(q.arg2) != 0) ? 1 : 0);
+            pc++;
+        }
+        else if (op == "||") {
+            setValue(q.result, (getValue(q.arg1) != 0 || getValue(q.arg2) != 0) ? 1 : 0);
+            pc++;
+        }
+        else if (op == "!") {
+            setValue(q.result, (getValue(q.arg1) == 0) ? 1 : 0);
+            pc++;
+        }
+        else if (op == "==") {
+            setValue(q.result, (getValue(q.arg1) == getValue(q.arg2)) ? 1 : 0);
+            pc++;
+        }
+        else if (op == "!=") {
+            setValue(q.result, (getValue(q.arg1) != getValue(q.arg2)) ? 1 : 0);
+            pc++;
+        }
         else if (op == "<") {
             setValue(q.result, (getValue(q.arg1) < getValue(q.arg2)) ? 1 : 0);
+            pc++;
+        }
+        else if (op == ">") {
+            setValue(q.result, (getValue(q.arg1) > getValue(q.arg2)) ? 1 : 0);
+            pc++;
+        }
+        else if (op == "<=") {
+            setValue(q.result, (getValue(q.arg1) <= getValue(q.arg2)) ? 1 : 0);
+            pc++;
+        }
+        else if (op == ">=") {
+            setValue(q.result, (getValue(q.arg1) >= getValue(q.arg2)) ? 1 : 0);
             pc++;
         }
         else {
